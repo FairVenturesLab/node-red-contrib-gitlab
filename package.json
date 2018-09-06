@@ -1,26 +1,26 @@
 {
-  "name": "node-red-contrib-gitlab",
-  "version": "0.0.6",
-  "description": "Node-RED node using GitLab APIs",
-  "dependencies": {
-    "node-gitlab": "^1.6.0"
-  },
-  "keywords": [
-    "node-red",
-    "nodered",
-    "gitlab",
-    "git",
-    "bluemix"
-  ],
-  "node-red": {
-    "nodes": {
-      "gitlab": "gitlab.js"
-    }
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/kotasuizu/node-red-contrib-gitlab"
-  },
-  "author": "Kota Suizu",
-  "license": "MIT"
+	"name": "node-red-contrib-gitlab",
+	"version": "0.0.6",
+	"description": "Node-RED node using GitLab APIs",
+	"dependencies": {
+		"gitlab": "^4.0.0"
+	},
+	"keywords": [
+		"node-red",
+		"nodered",
+		"gitlab",
+		"git",
+		"bluemix"
+	],
+	"node-red": {
+		"nodes": {
+			"gitlab": "gitlab.js"
+		}
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/kotasuizu/node-red-contrib-gitlab"
+	},
+	"author": "Kota Suizu",
+	"license": "MIT"
 }
