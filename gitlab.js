@@ -6,12 +6,36 @@
 
 module.exports = function(RED) {
 	'use strict';
-	var gitlab = require('gitlab');
+	const GitLabProjects = require('gitlab').ProjectsBundle;
+	function createClient(node) {
+		let client = new GitLabProjects({
+			url: node.gitlabConfig.url,
+			token: node.gitlabConfig.key
+		});
+		return client;
+	}
+
+	function processResult(result, node, msg) {
+		return result
+			.then(body => {
+				msg.payload = body;
+				node.send(msg);
+				node.log(RED._('Succeeded to API Call.'));
+			})
+			.catch(function(error, body) {
+				var myErr = {
+					inputMessage: msg,
+					error: error
+				};
+				console.log(myErr);
+				node.error('Failed to API Call. ' + error, myErr);
+			});
+	}
 
 	/**
 	 * GitLab API Config
 	 **/
-	class gitlabConfig {
+	class GitlabConfig {
 		constructor(n) {
 			RED.nodes.createNode(this, n);
 			this.key = n.key;
@@ -23,7 +47,7 @@ module.exports = function(RED) {
 			}
 		}
 	}
-	RED.nodes.registerType('gitlab-config', gitlabConfig, {
+	RED.nodes.registerType('gitlab-config', GitlabConfig, {
 		credentials: {
 			key: {
 				type: 'password'
@@ -70,34 +94,18 @@ module.exports = function(RED) {
 				if (_isTypeOf('Number', msg.payload.iid)) {
 					iid = msg.payload.iid;
 				}
-				var client = gitlab.create({
-					url: node.gitlabConfig.url,
-					token: node.gitlabConfig.key
-				});
-				client.issues.list(
-					{
-						id: project_id,
+				var client = createClient(node);
+				return processResult(
+					client.Issues.all(project_id, {
 						iid: iid,
 						state: node.state,
 						labels: node.labels,
 						milestone: node.milestone,
 						order_by: node.order_by,
 						sort: node.sort
-					},
-					function(error, body) {
-						if (!error) {
-							msg.payload = body;
-							node.send(msg);
-							node.log(RED._('Succeeded to API Call.'));
-						} else {
-							var myErr = {
-								inputMessage: msg,
-								error: error
-							};
-							console.log(myErr);
-							node.error('Failed to API Call. ' + error, myErr);
-						}
-					}
+					}),
+					node,
+					msg
 				);
 			});
 		}
@@ -138,7 +146,7 @@ module.exports = function(RED) {
 				if (_isTypeOf('String', msg.payload.labels)) {
 					labels = msg.payload.labels;
 				}
-				var client = gitlab.create({
+				var client = Gitlab.create({
 					url: node.gitlabConfig.url,
 					token: node.gitlabConfig.key
 				});
@@ -225,7 +233,7 @@ module.exports = function(RED) {
 					state_event = msg.payload.state_event;
 					param.state_event = state_event;
 				}
-				var client = gitlab.create({
+				var client = Gitlab.create({
 					url: node.gitlabConfig.url,
 					token: node.gitlabConfig.key
 				});
@@ -266,7 +274,7 @@ module.exports = function(RED) {
 				if (_isTypeOf('Number', msg.payload.issue_id)) {
 					issue_id = msg.payload.issue_id;
 				}
-				var client = gitlab.create({
+				var client = Gitlab.create({
 					url: node.gitlabConfig.url,
 					token: node.gitlabConfig.key
 				});
@@ -317,7 +325,7 @@ module.exports = function(RED) {
 				if (_isTypeOf('String', msg.payload.body)) {
 					body = msg.payload.body;
 				}
-				var client = gitlab.create({
+				var client = Gitlab.create({
 					url: node.gitlabConfig.url,
 					token: node.gitlabConfig.key
 				});
@@ -373,7 +381,7 @@ module.exports = function(RED) {
 				if (_isTypeOf('String', msg.payload.body)) {
 					body = msg.payload.body;
 				}
-				var client = gitlab.create({
+				var client = Gitlab.create({
 					url: node.gitlabConfig.url,
 					token: node.gitlabConfig.key
 				});
@@ -428,7 +436,7 @@ module.exports = function(RED) {
 				if (_isTypeOf('String', msg.payload.file_path)) {
 					file_path = msg.payload.file_path;
 				}
-				var client = gitlab.create({
+				var client = Gitlab.create({
 					url: node.gitlabConfig.url,
 					token: node.gitlabConfig.key
 				});
@@ -509,7 +517,7 @@ module.exports = function(RED) {
 					commit_message = msg.payload.commit_message;
 					param.commit_message = commit_message;
 				}
-				var client = gitlab.create({
+				var client = Gitlab.create({
 					url: node.gitlabConfig.url,
 					token: node.gitlabConfig.key
 				});
@@ -583,7 +591,7 @@ module.exports = function(RED) {
 					commit_message = msg.payload.commit_message;
 					param.commit_message = commit_message;
 				}
-				var client = gitlab.create({
+				var client = Gitlab.create({
 					url: node.gitlabConfig.url,
 					token: node.gitlabConfig.key
 				});
@@ -642,7 +650,7 @@ module.exports = function(RED) {
 					commit_message = msg.payload.commit_message;
 					param.commit_message = commit_message;
 				}
-				var client = gitlab.create({
+				var client = Gitlab.create({
 					url: node.gitlabConfig.url,
 					token: node.gitlabConfig.key
 				});
