@@ -19,8 +19,8 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/kotasuizu/node-red-contrib-gitlab"
+		"url": "https://github.com/FairVenturesLab/node-red-contrib-gitlab"
 	},
-	"author": "Kota Suizu",
+	"author": "Scott Morris",
 	"license": "MIT"
 }
