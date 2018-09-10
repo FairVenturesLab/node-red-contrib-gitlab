@@ -8,7 +8,7 @@ module.exports = function(RED) {
 	'use strict';
 	const GitLabProjects = require('gitlab').ProjectsBundle;
 	function createClient(node) {
-		let client = new GitLabProjects({
+		const client = new GitLabProjects({
 			url: node.gitlabConfig.url,
 			token: node.gitlabConfig.key
 		});
@@ -94,7 +94,7 @@ module.exports = function(RED) {
 				if (_isTypeOf('Number', msg.payload.iid)) {
 					iid = msg.payload.iid;
 				}
-				var client = createClient(node);
+				const client = createClient(node);
 				return processResult(
 					client.Issues.all(project_id, {
 						iid: iid,
@@ -146,33 +146,17 @@ module.exports = function(RED) {
 				if (_isTypeOf('String', msg.payload.labels)) {
 					labels = msg.payload.labels;
 				}
-				var client = Gitlab.create({
-					url: node.gitlabConfig.url,
-					token: node.gitlabConfig.key
-				});
-				client.issues.create(
-					{
-						id: project_id,
+				const client = createClient(node);
+				return processResult(
+					client.Issues.create(project_id, {
 						title: title,
 						description: description,
 						assignee_id: assignee_id,
 						milestone_id: milestone_id,
 						labels: labels
-					},
-					function(error, body) {
-						if (!error) {
-							msg.payload = body;
-							node.send(msg);
-							node.log(RED._('Succeeded to API Call.'));
-						} else {
-							var myErr = {
-								inputMessage: msg,
-								error: error
-							};
-							console.log(myErr);
-							node.error('Failed to API Call. ' + error, myErr);
-						}
-					}
+					}),
+					node,
+					msg
 				);
 			});
 		}
@@ -191,66 +175,52 @@ module.exports = function(RED) {
 				// Update Params
 				var param = {};
 				// Update if MSG has a value
-				var project_id = Number(node.gitlabConfig.project_id);
+				let project_id = Number(node.gitlabConfig.project_id);
 				if (_isTypeOf('Number', msg.payload.project_id)) {
 					project_id = msg.payload.project_id;
 				}
-				if (_isTypeOf('Number', project_id)) {
-					param.id = project_id;
-				}
-				var issue_id;
+				// if (_isTypeOf('Number', project_id)) {
+				// 	param.id = project_id;
+				// }
+				let issue_id;
 				if (_isTypeOf('Number', msg.payload.issue_id)) {
 					issue_id = msg.payload.issue_id;
-					param.issue_id = issue_id;
+					//param.issue_id = issue_id;
+					console.log('In Issue ID: ', issue_id);
 				}
-				var title;
+				console.log('After Issue ID: ', issue_id, ' msg: ', msg.payload);
+				let title;
 				if (_isTypeOf('String', msg.payload.title)) {
 					title = msg.payload.title;
 					param.title = title;
 				}
-				var description;
+				let description;
 				if (_isTypeOf('String', msg.payload.description)) {
 					description = msg.payload.description;
 					param.description = description;
 				}
-				var assignee_id;
+				let assignee_id;
 				if (_isTypeOf('Number', msg.payload.assignee_id)) {
 					assignee_id = msg.payload.assignee_id;
 					param.assignee_id = assignee_id;
 				}
-				var milestone_id;
+				let milestone_id;
 				if (_isTypeOf('Number', msg.payload.milestone_id)) {
 					milestone_id = msg.payload.milestone_id;
 					param.milestone_id = milestone_id;
 				}
-				var labels;
+				let labels;
 				if (_isTypeOf('String', msg.payload.labels)) {
 					labels = msg.payload.labels;
 					param.labels = labels;
 				}
-				var state_event;
+				let state_event;
 				if (_isTypeOf('String', msg.payload.state_event)) {
 					state_event = msg.payload.state_event;
 					param.state_event = state_event;
 				}
-				var client = Gitlab.create({
-					url: node.gitlabConfig.url,
-					token: node.gitlabConfig.key
-				});
-				client.issues.update(param, function(error, body) {
-					if (!error) {
-						msg.payload = body;
-						node.send(msg);
-						node.log(RED._('Succeeded to API Call.'));
-					} else {
-						var myErr = {
-							inputMessage: msg,
-							error: error
-						};
-						console.log(myErr);
-						node.error('Failed to API Call. ' + error, myErr);
-					}
-				});
+				const client = createClient(node);
+				return processResult(client.Issues.edit(project_id, issue_id, param), node, msg);
 			});
 		}
 	}
