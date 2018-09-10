@@ -7,7 +7,7 @@
 module.exports = function(RED) {
 	'use strict';
 	const GitLabProjects = require('gitlab').ProjectsBundle;
-	function createClient(node) {
+	function createProjectsClient(node) {
 		const client = new GitLabProjects({
 			url: node.gitlabConfig.url,
 			token: node.gitlabConfig.key
@@ -23,7 +23,7 @@ module.exports = function(RED) {
 				node.log(RED._('Succeeded to API Call.'));
 			})
 			.catch(function(error, body) {
-				var myErr = {
+				const myErr = {
 					inputMessage: msg,
 					error: error
 				};
@@ -41,7 +41,7 @@ module.exports = function(RED) {
 			this.key = n.key;
 			this.url = n.url;
 			this.project_id = n.project_id;
-			var credentials = this.credentials;
+			const credentials = this.credentials;
 			if (credentials && credentials.hasOwnProperty('key')) {
 				this.key = credentials.key;
 			}
@@ -68,10 +68,10 @@ module.exports = function(RED) {
 			this.milestone = n.milestone;
 			this.order_by = n.order_by;
 			this.sort = n.sort;
-			var node = this;
+			const node = this;
 			this.on('input', function(msg) {
 				// Update if MSG has a value
-				var project_id = Number(node.gitlabConfig.project_id);
+				let project_id = Number(node.gitlabConfig.project_id);
 				if (_isTypeOf('Number', msg.payload.project_id)) {
 					project_id = msg.payload.project_id;
 				}
@@ -90,11 +90,11 @@ module.exports = function(RED) {
 				if (_isTypeOf('String', msg.payload.sort)) {
 					node.sort = msg.payload.sort;
 				}
-				var iid;
+				let iid;
 				if (_isTypeOf('Number', msg.payload.iid)) {
 					iid = msg.payload.iid;
 				}
-				const client = createClient(node);
+				const client = createProjectsClient(node);
 				return processResult(
 					client.Issues.all(project_id, {
 						iid: iid,
@@ -119,34 +119,34 @@ module.exports = function(RED) {
 		constructor(n) {
 			RED.nodes.createNode(this, n);
 			this.gitlabConfig = RED.nodes.getNode(n.gitlabconfig);
-			var node = this;
+			const node = this;
 			this.on('input', function(msg) {
 				// Update if MSG has a value
-				var project_id = Number(node.gitlabConfig.project_id);
+				let project_id = Number(node.gitlabConfig.project_id);
 				if (_isTypeOf('Number', msg.payload.project_id)) {
 					project_id = msg.payload.project_id;
 				}
-				var title;
+				let title;
 				if (_isTypeOf('String', msg.payload.title)) {
 					title = msg.payload.title;
 				}
-				var description;
+				let description;
 				if (_isTypeOf('String', msg.payload.description)) {
 					description = msg.payload.description;
 				}
-				var assignee_id;
+				let assignee_id;
 				if (_isTypeOf('Number', msg.payload.assignee_id)) {
 					assignee_id = msg.payload.assignee_id;
 				}
-				var milestone_id;
+				let milestone_id;
 				if (_isTypeOf('Number', msg.payload.milestone_id)) {
 					milestone_id = msg.payload.milestone_id;
 				}
-				var labels;
+				let labels;
 				if (_isTypeOf('String', msg.payload.labels)) {
 					labels = msg.payload.labels;
 				}
-				const client = createClient(node);
+				const client = createProjectsClient(node);
 				return processResult(
 					client.Issues.create(project_id, {
 						title: title,
@@ -170,10 +170,10 @@ module.exports = function(RED) {
 		constructor(n) {
 			RED.nodes.createNode(this, n);
 			this.gitlabConfig = RED.nodes.getNode(n.gitlabconfig);
-			var node = this;
+			const node = this;
 			this.on('input', function(msg) {
 				// Update Params
-				var param = {};
+				const param = {};
 				// Update if MSG has a value
 				let project_id = Number(node.gitlabConfig.project_id);
 				if (_isTypeOf('Number', msg.payload.project_id)) {
@@ -186,9 +186,7 @@ module.exports = function(RED) {
 				if (_isTypeOf('Number', msg.payload.issue_id)) {
 					issue_id = msg.payload.issue_id;
 					//param.issue_id = issue_id;
-					console.log('In Issue ID: ', issue_id);
 				}
-				console.log('After Issue ID: ', issue_id, ' msg: ', msg.payload);
 				let title;
 				if (_isTypeOf('String', msg.payload.title)) {
 					title = msg.payload.title;
@@ -219,7 +217,7 @@ module.exports = function(RED) {
 					state_event = msg.payload.state_event;
 					param.state_event = state_event;
 				}
-				const client = createClient(node);
+				const client = createProjectsClient(node);
 				return processResult(client.Issues.edit(project_id, issue_id, param), node, msg);
 			});
 		}
@@ -233,41 +231,21 @@ module.exports = function(RED) {
 		constructor(n) {
 			RED.nodes.createNode(this, n);
 			this.gitlabConfig = RED.nodes.getNode(n.gitlabconfig);
-			var node = this;
+			const node = this;
 			this.on('input', function(msg) {
 				// Update if MSG has a value
-				var project_id = Number(node.gitlabConfig.project_id);
+				let project_id = Number(node.gitlabConfig.project_id);
 				if (_isTypeOf('Number', msg.payload.project_id)) {
 					project_id = msg.payload.project_id;
 				}
-				var issue_id;
+				let issue_id;
 				if (_isTypeOf('Number', msg.payload.issue_id)) {
 					issue_id = msg.payload.issue_id;
 				}
-				var client = Gitlab.create({
-					url: node.gitlabConfig.url,
-					token: node.gitlabConfig.key
-				});
-				client.issues.listNotes(
-					{
-						id: project_id,
-						issue_id: issue_id
-					},
-					function(error, body) {
-						if (!error) {
-							msg.payload = body;
-							node.send(msg);
-							node.log(RED._('Succeeded to API Call.'));
-						} else {
-							var myErr = {
-								inputMessage: msg,
-								error: error
-							};
-							console.log(myErr);
-							node.error('Failed to API Call. ' + error, myErr);
-						}
-					}
-				);
+				const client = createProjectsClient(node);
+				return processResult(client.IssueNotes.all(project_id, issue_id), node, msg);
+				// IssueNotes
+				// all(resourceId, resource2Id, options)
 			});
 		}
 	}
@@ -280,46 +258,23 @@ module.exports = function(RED) {
 		constructor(n) {
 			RED.nodes.createNode(this, n);
 			this.gitlabConfig = RED.nodes.getNode(n.gitlabconfig);
-			var node = this;
+			const node = this;
 			this.on('input', function(msg) {
 				// Update if MSG has a value
-				var project_id = Number(node.gitlabConfig.project_id);
+				let project_id = Number(node.gitlabConfig.project_id);
 				if (_isTypeOf('Number', msg.payload.project_id)) {
 					project_id = msg.payload.project_id;
 				}
-				var issue_id;
+				let issue_id;
 				if (_isTypeOf('Number', msg.payload.issue_id)) {
 					issue_id = msg.payload.issue_id;
 				}
-				var body;
+				let body;
 				if (_isTypeOf('String', msg.payload.body)) {
 					body = msg.payload.body;
 				}
-				var client = Gitlab.create({
-					url: node.gitlabConfig.url,
-					token: node.gitlabConfig.key
-				});
-				client.issues.createNote(
-					{
-						id: project_id,
-						issue_id: issue_id,
-						body: body
-					},
-					function(error, body) {
-						if (!error) {
-							msg.payload = body;
-							node.send(msg);
-							node.log(RED._('Succeeded to API Call.'));
-						} else {
-							var myErr = {
-								inputMessage: msg,
-								error: error
-							};
-							console.log(myErr);
-							node.error('Failed to API Call. ' + error, myErr);
-						}
-					}
-				);
+				const client = createProjectsClient(node);
+				return processResult(client.IssueNotes.create(project_id, issue_id, { body: body }), node, msg);
 			});
 		}
 	}
@@ -332,51 +287,27 @@ module.exports = function(RED) {
 		constructor(n) {
 			RED.nodes.createNode(this, n);
 			this.gitlabConfig = RED.nodes.getNode(n.gitlabconfig);
-			var node = this;
+			const node = this;
 			this.on('input', function(msg) {
 				// Update if MSG has a value
-				var project_id = Number(node.gitlabConfig.project_id);
+				let project_id = Number(node.gitlabConfig.project_id);
 				if (_isTypeOf('Number', msg.payload.project_id)) {
 					project_id = msg.payload.project_id;
 				}
-				var issue_id;
+				let issue_id;
 				if (_isTypeOf('Number', msg.payload.issue_id)) {
 					issue_id = msg.payload.issue_id;
 				}
-				var note_id;
+				let note_id;
 				if (_isTypeOf('Number', msg.payload.note_id)) {
 					note_id = msg.payload.note_id;
 				}
-				var body;
+				let body;
 				if (_isTypeOf('String', msg.payload.body)) {
 					body = msg.payload.body;
 				}
-				var client = Gitlab.create({
-					url: node.gitlabConfig.url,
-					token: node.gitlabConfig.key
-				});
-				client.issues.updateNote(
-					{
-						id: project_id,
-						issue_id: issue_id,
-						note_id: note_id,
-						body: body
-					},
-					function(error, body) {
-						if (!error) {
-							msg.payload = body;
-							node.send(msg);
-							node.log(RED._('Succeeded to API Call.'));
-						} else {
-							var myErr = {
-								inputMessage: msg,
-								error: error
-							};
-							console.log(myErr);
-							node.error('Failed to API Call. ' + error, myErr);
-						}
-					}
-				);
+				const client = createProjectsClient(node);
+				return processResult(client.IssueNotes.edit(project_id, issue_id, note_id, { body: body }), node, msg);
 			});
 		}
 	}
@@ -406,7 +337,7 @@ module.exports = function(RED) {
 				if (_isTypeOf('String', msg.payload.file_path)) {
 					file_path = msg.payload.file_path;
 				}
-				const client = createClient(node);
+				const client = createProjectsClient(node);
 				return processResult(client.RepositoryFiles.show(project_id, file_path, ref), node, msg);
 			});
 		}
@@ -464,7 +395,7 @@ module.exports = function(RED) {
 					commit_message = msg.payload.commit_message;
 					param.commit_message = commit_message;
 				}
-				const client = createClient(node);
+				const client = createProjectsClient(node);
 				return processResult(client.RepositoryFiles.create(project_id, file_path, branch_name, param), node, msg);
 			});
 		}
@@ -522,7 +453,7 @@ module.exports = function(RED) {
 					commit_message = msg.payload.commit_message;
 					param.commit_message = commit_message;
 				}
-				const client = createClient(node);
+				const client = createProjectsClient(node);
 				//edit(projectId, filePath, branch, options
 				return processResult(client.RepositoryFiles.show(project_id, file_path, branch_name, param), node, msg);
 			});
@@ -566,7 +497,7 @@ module.exports = function(RED) {
 					commit_message = msg.payload.commit_message;
 					param.commit_message = commit_message;
 				}
-				const client = createClient(node);
+				const client = createProjectsClient(node);
 				// edit(projectId, filePath, branch, options
 				return processResult(client.RepositoryFiles.remove(project_id, file_path, branch_name, param), node, msg);
 			});
@@ -587,7 +518,7 @@ module.exports = function(RED) {
 	 *    Object
 	 **/
 	function _isTypeOf(type, obj) {
-		var clas = Object.prototype.toString.call(obj).slice(8, -1);
+		const clas = Object.prototype.toString.call(obj).slice(8, -1);
 		return obj !== undefined && obj !== null && clas === type;
 	}
 };
