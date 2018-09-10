@@ -1,7 +1,7 @@
 # node-red-contrib-gitlab
 
 Node-RED node using GitLab APIs.
-This is a wrapper around [node-gitlab](https://www.npmjs.com/package/node-gitlab). Check it out for more info.
+This is a wrapper around [node-gitlab](https://github.com/jdalrymple/node-gitlab). Check it out for more info.
 
 ## How to Install
 
